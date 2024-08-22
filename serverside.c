@@ -51,23 +51,28 @@ int main(int argc, char *argv[])
 
     newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
 
-    if(newsockfd <0){
+    if (newsockfd < 0)
+    {
         error("Error on Accept");
     }
-    while(1){
+    
+    //using a while loop for message exchange. bye for quiting the chat
+    while (1)
+    {
         bzero(buffer, 255);
-        n = read(newsockfd,buffer,255);
-        if(n<0)
+        n = read(newsockfd, buffer, 255);
+        if (n < 0)
             error("Error on reading");
         printf("Client : %s\n", buffer);
         bzero(buffer, 255);
         fgets(buffer, 255, stdin);
         n = write(newsockfd, buffer, strlen(buffer));
-        if(n<0){
+        if (n < 0)
+        {
             error("Error on Writting");
         }
         int i = strncmp("bye", buffer, 3);
-        if(i==0)
+        if (i == 0)
             break;
     }
     close(newsockfd);
