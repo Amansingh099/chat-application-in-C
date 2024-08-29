@@ -1,81 +1,65 @@
+// server_utils.c
 #include <stdio.h>
-#include <stdlib.h>     //provides function for memory allocation
-#include <string.h>     //string operations
-#include <unistd.h>     //inlcuded for sytem calls like read write etc.
-#include <sys/types.h>  //contains data types needed for system calls.
-#include <sys/socket.h> //contains number of function needed for socket Api.
-#include <netinet/in.h> //contains structure for internet domain address
+#include <stdlib.h>     // Provides functions for memory allocation
+#include <string.h>     // String operations
+#include <unistd.h>     // Included for system calls like read, write, etc.
+#include <sys/types.h>  // Contains data types needed for system calls
+#include <sys/socket.h> // Contains functions needed for socket API
+#include <netinet/in.h> // Contains structures for internet domain addresses
 
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
 }
-int main(int argc, char *argv[])
+
+// Function to set up and return the server socket file descriptor
+int setup_server_socket(int portno)
 {
-    if (argc < 2)
-    {
-        fprintf(stderr, "Port No not provided. Program terminated\n"); // prints the error message in the stderr stream which is used for error displaying
-        exit(1);
-    }
-    int sockfd, newsockfd, portno, n;
-    char buffer[255];
+    int sockfd;
+    struct sockaddr_in serv_addr; // Server address struct
 
-    struct sockaddr_in serv_addr, cli_addr; // gives the internet address. it is provided by netinet header file
-
-    socklen_t clilen;
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0); // AF_INET-IPV4,SOCK_STREAM-TCP,DEFAULT PROTOCOL FOR TCP
-
+    sockfd = socket(AF_INET, SOCK_STREAM, 0); // Create a TCP/IP socket
     if (sockfd < 0)
     {
         error("Error opening Socket");
     }
 
     bzero((char *)&serv_addr, sizeof(serv_addr));
-
-    // bzero is used to zero out the memory occupied by the serv_addr structure
-    portno = atoi(argv[1]);
-
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY; // it allows the server to bind to any ip address on this machine
+    serv_addr.sin_addr.s_addr = INADDR_ANY; // Allow connections from any IP address
     serv_addr.sin_port = htons(portno);
-    int bindresponse = bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)); // assigning address to the socket
-    if (bindresponse < 0)
+
+    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
         error("Binding Failed");
     }
-    listen(sockfd, 5); // 5 indicates the no of connection that can connect to server at a time
 
-    clilen = sizeof(cli_addr);
+    listen(sockfd, 5); // Listen for up to 5 connections
+    return sockfd;
+}
 
-    newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+// Function to handle communication with the client
+void handle_client(int newsockfd)
+{
+    char buffer[255];
+    int n;
 
-    if (newsockfd < 0)
-    {
-        error("Error on Accept");
-    }
-    
-    //using a while loop for message exchange. bye for quiting the chat
     while (1)
     {
         bzero(buffer, 255);
-        n = read(newsockfd, buffer, 255);
+        n = read(newsockfd, buffer, 255); // Read from client
         if (n < 0)
             error("Error on reading");
-        printf("Client : %s\n", buffer);
+        printf("Client: %s\n", buffer);
+
         bzero(buffer, 255);
-        fgets(buffer, 255, stdin);
-        n = write(newsockfd, buffer, strlen(buffer));
+        fgets(buffer, 255, stdin);                    // Read server input
+        n = write(newsockfd, buffer, strlen(buffer)); // Write to client
         if (n < 0)
-        {
-            error("Error on Writting");
-        }
-        int i = strncmp("bye", buffer, 3);
-        if (i == 0)
-            break;
+            error("Error on writing");
+
+        if (strncmp("bye", buffer, 3) == 0)
+            break; // Exit loop if "bye" is entered
     }
-    close(newsockfd);
-    close(sockfd);
-    return 0;
 }
