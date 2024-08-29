@@ -52,7 +52,6 @@ void handle_client(int newsockfd)
         if (n < 0)
             error("Error on reading");
         printf("Client: %s\n", buffer);
-
         bzero(buffer, 255);
         fgets(buffer, 255, stdin);                    // Read server input
         n = write(newsockfd, buffer, strlen(buffer)); // Write to client

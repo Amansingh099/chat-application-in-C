@@ -11,7 +11,6 @@ int main()
 {
     int portno;
 
-    // Prompt user for the port number
     printf("Enter port number: ");
     scanf("%d", &portno); // Read the port number from the user
 

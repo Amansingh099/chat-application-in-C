@@ -29,7 +29,7 @@ void connect_to_server(const char *hostname, int portno)
 
     // Get the server information by hostname
     server = gethostbyname(hostname);
-    if (!server) // Check if server is found
+    if (!server) 
     {
         fprintf(stderr, "Error, no such host\n");
         exit(1); // Exit the program if server is not found
