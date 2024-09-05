@@ -71,11 +71,13 @@ void *client_handler(void *socket_desc)
     bzero(buffer, BUFFER_SIZE);
     n = write(sockfd, "Enter your name: ", 17);
     if (n < 0)
+    {
         error("Error writing to socket");
+    }
 
     // Read the client's name
     bzero(buffer, BUFFER_SIZE);
-    n = read(sockfd, buffer, BUFFER_SIZE - 1); // Read name from the client
+    n = read(sockfd, buffer, BUFFER_SIZE - 1);
     if (n <= 0)
     {
         printf("Client disconnected before sending name\n");
@@ -87,9 +89,9 @@ void *client_handler(void *socket_desc)
     // Remove newline character from the name
     buffer[strcspn(buffer, "\n")] = 0;
 
-    // Store the client's name
     pthread_mutex_lock(&clients_mutex);
-    strcpy(client_names[num_clients - 1], buffer);
+    int client_index = num_clients - 1;         // Assuming the client was added to the end
+    strcpy(client_names[client_index], buffer); // Store the client's name
     pthread_mutex_unlock(&clients_mutex);
 
     printf("Client connected with name: %s\n", buffer);
@@ -97,24 +99,22 @@ void *client_handler(void *socket_desc)
     while (1)
     {
         bzero(buffer, BUFFER_SIZE);
-        n = read(sockfd, buffer, BUFFER_SIZE); // Read from the client
+        n = read(sockfd, buffer, BUFFER_SIZE);
         if (n <= 0)
         {
-            printf("Client %s disconnected\n", client_names[num_clients - 1]);
+            printf("Client %s disconnected\n", client_names[client_index]);
             break;
         }
 
-        // Format the message with the client's name
         char message[1058];
-        snprintf(message, sizeof(message), "%s: %s", client_names[num_clients - 1], buffer);
-        printf("Received from %s: %s", client_names[num_clients - 1], buffer);
+        snprintf(message, sizeof(message), "%s: %s", client_names[client_index], buffer);
+        printf("Received from %s: %s", client_names[client_index], buffer);
 
-        // Broadcast the message to all other clients
         broadcast_message(message, sockfd);
     }
 
-    // Remove the client from the list
     pthread_mutex_lock(&clients_mutex);
+    // Remove client from the list
     for (int i = 0; i < num_clients; i++)
     {
         if (client_sockets[i] == sockfd)

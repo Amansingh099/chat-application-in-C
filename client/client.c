@@ -1,18 +1,15 @@
-// client_utils.c
-#include "client_utils.h" // Include your own header file
+// client_main.c
+#include "client_utils.h" // Include the header file for static library functions
 
-// Include additional headers needed for function implementations
-#include <stdio.h>      // For printf, perror
-#include <stdlib.h>     // For exit, malloc, free
-#include <string.h>     // For memset, strlen, strncmp, etc.
-#include <unistd.h>     // For close, read, write functions
-#include <arpa/inet.h>  // For inet_pton, sockaddr_in structures
-#include <sys/socket.h> // For socket-related functions
+#include <stdio.h>   // For printf, scanf, fgets
+#include <stdlib.h>  // For exit
+#include <unistd.h>  // For close
+#include <pthread.h> // For pthread_create, pthread_join
+#include <string.h>  // For string operations like strcspn
 
 int main()
 {
     int sockfd, portno;
-    struct sockaddr_in serv_addr;
     char hostname[BUFFER_SIZE];
     char name[BUFFER_SIZE];
 
@@ -29,24 +26,8 @@ int main()
         exit(1);
     }
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-    {
-        error("Error opening socket");
-    }
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(portno);
-
-    if (inet_pton(AF_INET, hostname, &serv_addr.sin_addr) <= 0)
-    {
-        error("Invalid address or address not supported");
-    }
-
-    if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        error("Connection failed");
-    }
+    // Connect to the server
+    sockfd = connect_to_server(hostname, portno);
 
     // Prompt for the user's name and send it to the server
     printf("Enter your name: ");

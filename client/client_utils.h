@@ -6,3 +6,4 @@
 void error(const char *msg);
 void *send_messages(void *sockfd);
 void *receive_messages(void *sockfd);
+int connect_to_server(const char *hostname, int portno);
