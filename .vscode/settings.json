@@ -1,7 +1,0 @@
-{
-  "C_Cpp.errorSquiggles": "disabled",
-  "files.associations": {
-    "*.ejs": "html",
-    "server_utils.h": "c"
-  }
-}

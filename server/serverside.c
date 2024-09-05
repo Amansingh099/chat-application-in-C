@@ -60,47 +60,74 @@ void broadcast_message(char *message, int sender_socket)
     pthread_mutex_unlock(&clients_mutex); // Unlock the mutex after accessing shared resources
 }
 
-// Function to handle communication with the client
-void *client_handler(void *socket_desc)
+int handle_client_name(int sockfd, int client_index)
 {
-    int sockfd = *(int *)socket_desc;
     char buffer[BUFFER_SIZE];
-    int n;
-
-    // Ask for the client's name
     bzero(buffer, BUFFER_SIZE);
-    n = write(sockfd, "Enter your name: ", 17);
-    if (n < 0)
-    {
-        error("Error writing to socket");
-    }
+
+    // Send the name prompt to the client
+    const char *name_prompt = "Enter your name: ";
+    send(sockfd, name_prompt, strlen(name_prompt), 0);
 
     // Read the client's name
-    bzero(buffer, BUFFER_SIZE);
-    n = read(sockfd, buffer, BUFFER_SIZE - 1);
-    if (n <= 0)
+    int n = read(sockfd, buffer, BUFFER_SIZE - 1);
+    if (n <= 0 || strlen(buffer) == 0)
     {
-        printf("Client disconnected before sending name\n");
-        close(sockfd);
-        free(socket_desc);
-        pthread_exit(NULL);
+        char *error_msg = "Invalid name received. Please reconnect and provide a valid name.\n";
+        write(sockfd, error_msg, strlen(error_msg));
+        printf("Client disconnected before sending a valid name\n");
+        return 0;
     }
 
-    // Remove newline character from the name
+    // Remove newline character from the name if present
     buffer[strcspn(buffer, "\n")] = 0;
 
+    // Store the client's name
     pthread_mutex_lock(&clients_mutex);
-    int client_index = num_clients - 1;         // Assuming the client was added to the end
-    strcpy(client_names[client_index], buffer); // Store the client's name
+    strcpy(client_names[client_index], buffer);
     pthread_mutex_unlock(&clients_mutex);
 
     printf("Client connected with name: %s\n", buffer);
 
+    // Send a welcome message to the client
+    char welcome_msg[BUFFER_SIZE];
+    snprintf(welcome_msg, BUFFER_SIZE, "Welcome, %s! You're now connected to the chat server.\n", buffer);
+    send(sockfd, welcome_msg, strlen(welcome_msg), 0);
+
+    return 1;
+}
+// Function to handle communication with the client
+void *client_handler(void *socket_desc)
+{
+    int sockfd = *(int *)socket_desc;
+    free(socket_desc);
+    // Handle the client's name
+    pthread_mutex_lock(&clients_mutex);
+    int client_index = num_clients - 1; 
+    pthread_mutex_unlock(&clients_mutex);
+
+    if (!handle_client_name(sockfd, client_index))
+    {
+        // If the client name is invalid or if the client disconnects, exit the handler
+        close(sockfd);
+        pthread_exit(NULL);
+    }
+
+    char buffer[BUFFER_SIZE];
+    int n;
+
+    // Main loop for handling client messages
     while (1)
     {
         bzero(buffer, BUFFER_SIZE);
         n = read(sockfd, buffer, BUFFER_SIZE);
         if (n <= 0)
+        {
+            printf("Client %s disconnected\n", client_names[client_index]);
+            break;
+        }
+
+        if (strncmp(buffer, "bye", 3) == 0)
         {
             printf("Client %s disconnected\n", client_names[client_index]);
             break;
@@ -113,8 +140,8 @@ void *client_handler(void *socket_desc)
         broadcast_message(message, sockfd);
     }
 
-    pthread_mutex_lock(&clients_mutex);
     // Remove client from the list
+    pthread_mutex_lock(&clients_mutex);
     for (int i = 0; i < num_clients; i++)
     {
         if (client_sockets[i] == sockfd)
@@ -132,6 +159,5 @@ void *client_handler(void *socket_desc)
     pthread_mutex_unlock(&clients_mutex);
 
     close(sockfd);
-    free(socket_desc);
     pthread_exit(NULL);
 }

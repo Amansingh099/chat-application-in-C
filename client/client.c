@@ -1,11 +1,12 @@
-// client_main.c
-#include "client_utils.h" // Include the header file for static library functions
+#include "client_utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <string.h>
 
-#include <stdio.h>   // For printf, scanf, fgets
-#include <stdlib.h>  // For exit
-#include <unistd.h>  // For close
-#include <pthread.h> // For pthread_create, pthread_join
-#include <string.h>  // For string operations like strcspn
+void *receive_messages(void *socket_desc);
+void *send_messages(void *socket_desc);
 
 int main()
 {
@@ -13,12 +14,13 @@ int main()
     char hostname[BUFFER_SIZE];
     char name[BUFFER_SIZE];
 
-    printf("Enter hostname: ");
+    printf("Enter server Ip: ");
     fgets(hostname, BUFFER_SIZE, stdin);
     hostname[strcspn(hostname, "\n")] = 0; // Remove newline character
 
     printf("Enter port number: ");
     scanf("%d", &portno);
+    getchar(); // Consume the newline left by scanf
 
     if (portno <= 0)
     {
@@ -29,9 +31,16 @@ int main()
     // Connect to the server
     sockfd = connect_to_server(hostname, portno);
 
-    // Prompt for the user's name and send it to the server
-    printf("Enter your name: ");
-    getchar(); // To consume the newline character left by scanf
+    // Wait for the server's name prompt
+    char server_prompt[BUFFER_SIZE];
+    int n = read(sockfd, server_prompt, BUFFER_SIZE - 1);
+    if (n > 0)
+    {
+        server_prompt[n] = 0; // Null-terminate the message
+        printf("%s", server_prompt);
+    }
+
+    // Read the name from user input
     fgets(name, BUFFER_SIZE, stdin);
     name[strcspn(name, "\n")] = 0; // Remove newline character
 
@@ -41,7 +50,7 @@ int main()
         error("Error sending name to server");
     }
 
-    printf("Connected to the server as %s. Type 'bye' to exit.\n", name);
+    printf("Connected to the server. Type 'bye' to exit.\n");
 
     // Create threads for sending and receiving messages
     pthread_t send_thread, receive_thread;

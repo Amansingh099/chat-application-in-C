@@ -1,4 +1,3 @@
-// client_utils.c
 #include "client_utils.h" // Include your own header file
 
 #include <stdio.h>      // For printf, perror
@@ -7,6 +6,8 @@
 #include <unistd.h>     // For close, read, write functions
 #include <arpa/inet.h>  // For inet_pton, sockaddr_in structures
 #include <sys/socket.h> // For socket-related functions
+#include <pthread.h>    // For pthread functions
+
 
 void error(const char *msg)
 {
@@ -59,7 +60,10 @@ void *send_messages(void *sockfd)
 
         if (strncmp("bye", buffer, 3) == 0)
         {
-            break; // Exit if the user types 'bye'
+            
+            printf("Successfully disconnected\n");
+            exit(1);
+            break;           // Exit if the user types 'bye'
         }
     }
 
@@ -74,6 +78,8 @@ void *receive_messages(void *sockfd)
 
     while (1)
     {
+        
+
         bzero(buffer, BUFFER_SIZE);
         int n = read(socket, buffer, BUFFER_SIZE);
 

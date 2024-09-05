@@ -65,6 +65,7 @@ int main()
             continue;
         }
         // Detach the thread to allow it to clean up resources upon completion
+        
         pthread_detach(client_thread);
     }
     close(sockfd);
