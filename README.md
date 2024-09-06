@@ -11,4 +11,18 @@ This project is a multi-client chat application implemented in C using socket pr
 
 ## Project Structure
 
-├── include/ # Header files │ ├── server_utils.h # Server utilities header │ └── client_utils.h # Client utilities header ├── lib/ # Static libraries │ ├── libserverutils.a # Server utilities static library │ └── libclientutils.a # Client utilities static library ├── src/ # Source files │ ├── server.c # Main server source file │ ├── client.c # Main client source file │ ├── server_utils.c # Server utilities source file │ └── client_utils.c # Client utilities source file ├── bin/ # Compiled executables │ ├── server # Server executable │ └── client # Client executable └── run_chat_app.sh # Shell script for building and running the application
+├── include/                      # Header files
+│   ├── server_utils.h            # Server utilities header
+│   └── client_utils.h            # Client utilities header
+├── lib/                          # Static libraries
+│   ├── libserverutils.a          # Server utilities static library
+│   └── libclientutils.a          # Client utilities static library
+├── src/                          # Source files
+│   ├── server.c                  # Main server source file
+│   ├── client.c                  # Main client source file
+│   ├── server_utils.c            # Server utilities source file
+│   └── client_utils.c            # Client utilities source file
+├── bin/                          # Compiled executables
+│   ├── server                    # Server executable
+│   └── client                    # Client executable
+└── run_chat_app.sh 
