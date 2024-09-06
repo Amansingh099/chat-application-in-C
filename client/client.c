@@ -20,7 +20,7 @@ int main()
 
     printf("Enter port number: ");
     scanf("%d", &portno);
-    getchar(); // Consume the newline left by scanf
+    getchar(); 
 
     if (portno <= 0)
     {

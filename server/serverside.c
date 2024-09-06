@@ -91,7 +91,6 @@ int handle_client_name(int sockfd, int client_index)
 
     // Send a welcome message to the client
     char welcome_msg[BUFFER_SIZE];
-    snprintf(welcome_msg, BUFFER_SIZE, "Welcome, %s! You're now connected to the chat server.\n", buffer);
     send(sockfd, welcome_msg, strlen(welcome_msg), 0);
 
     return 1;
@@ -103,7 +102,7 @@ void *client_handler(void *socket_desc)
     free(socket_desc);
     // Handle the client's name
     pthread_mutex_lock(&clients_mutex);
-    int client_index = num_clients - 1; 
+    int client_index = num_clients - 1;
     pthread_mutex_unlock(&clients_mutex);
 
     if (!handle_client_name(sockfd, client_index))
