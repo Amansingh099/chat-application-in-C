@@ -1,3 +1,4 @@
+
 #include <pthread.h>
 
 #define MAX_CLIENTS 100 // Maximum number of clients
