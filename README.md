@@ -10,7 +10,7 @@ This project is a multi-client chat application implemented in C using socket pr
 - Error handling and clean exit on disconnect or errors.
 
 ## Project Structure
-
+```
 ├── include/                      # Header files
 │   ├── server_utils.h            # Server utilities header
 │   └── client_utils.h            # Client utilities header
@@ -28,7 +28,7 @@ This project is a multi-client chat application implemented in C using socket pr
 ├── server.sh                     # Shell script for building and running the server
 └── client.sh                     # Shell script for building and running the client
 
-
+```
 
 
 
